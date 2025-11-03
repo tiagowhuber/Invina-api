@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { webpayPlus, webpayConfig } from '../config/webpay';
+import { webpayConfig } from '../config/webpay';
 import OrderModel from '../models/Order';
 import WebPayTransactionModel from '../models/WebPayTransaction';
 import { generateBuyOrder } from '../utils/generators';
@@ -53,20 +53,35 @@ export const webpayController = {
       const buyOrder = generateBuyOrder();
       const sessionId = `SESSION-${order.orderNumber}`;
       const amount = Math.round(parseFloat(order.totalAmount.toString()));
-      const returnUrl = webpayConfig.returnUrl;
       
-      // Create WebPay transaction
-      const response = await webpayPlus.create(
-        buyOrder,
-        sessionId,
-        amount,
-        returnUrl
-      );
+      // Create transaction with Transbank REST API
+      const response = await fetch(webpayConfig.apiUrl, {
+        method: 'POST',
+        headers: {
+          'Tbk-Api-Key-Id': webpayConfig.commerceCode,
+          'Tbk-Api-Key-Secret': webpayConfig.apiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          buy_order: buyOrder,
+          session_id: sessionId,
+          amount: amount,
+          return_url: webpayConfig.returnUrl,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Transbank API error:', errorText);
+        throw new Error(`Failed to create Transbank transaction: ${response.status}`);
+      }
+
+      const responseData: any = await response.json();
       
       // Save transaction to database
       await WebPayTransactionModel.create({
         order_id: order.id,
-        token: response.token,
+        token: responseData.token,
         buy_order: buyOrder,
         amount: amount,
         status: 'pending',
@@ -76,8 +91,8 @@ export const webpayController = {
         success: true,
         message: 'WebPay transaction initiated',
         data: {
-          token: response.token,
-          url: response.url,
+          token: responseData.token,
+          url: responseData.url + '?token_ws=' + responseData.token,
         },
       });
     } catch (error) {
@@ -86,7 +101,7 @@ export const webpayController = {
     }
   },
 
-  // POST /api/webpay/confirm - Confirm WebPay transaction
+  // POST /api/webpay/confirm - Confirm WebPay transaction (not used with REST API, kept for compatibility)
   async confirmTransaction(req: Request<{}, {}, ConfirmPaymentRequest>, res: Response, next: NextFunction): Promise<void> {
     try {
       const { token } = req.body;
@@ -110,24 +125,37 @@ export const webpayController = {
         return;
       }
       
-      // Commit transaction with WebPay
-      const response = await webpayPlus.commit(token);
+      // Commit transaction with Transbank REST API
+      const response = await fetch(`${webpayConfig.apiUrl}/${token}`, {
+        method: 'PUT',
+        headers: {
+          'Tbk-Api-Key-Id': webpayConfig.commerceCode,
+          'Tbk-Api-Key-Secret': webpayConfig.apiKey,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Transbank API returned status ${response.status}`);
+      }
+
+      const json: any = await response.json();
       
-      // Determine transaction status
+      // Determine transaction status based on Transbank response
       let transactionStatus: 'approved' | 'rejected' | 'failed' = 'failed';
-      if (response.response_code === 0) {
+      if (json.status === 'AUTHORIZED' && json.response_code === 0) {
         transactionStatus = 'approved';
-      } else if (response.response_code === -1) {
+      } else if (json.status === 'FAILED' || json.status === 'REJECTED') {
         transactionStatus = 'rejected';
       }
       
       // Update transaction in database
       await WebPayTransactionModel.updateWithResponse(token, {
         status: transactionStatus,
-        response_code: response.response_code?.toString(),
-        authorization_code: response.authorization_code,
-        transaction_date: response.transaction_date ? new Date(response.transaction_date) : new Date(),
-        raw_response: response,
+        response_code: json.response_code?.toString(),
+        authorization_code: json.authorization_code,
+        transaction_date: json.transaction_date ? new Date(json.transaction_date) : new Date(),
+        raw_response: json,
       });
       
       // If approved, confirm the order
@@ -140,10 +168,10 @@ export const webpayController = {
         message: 'Transaction confirmed',
         data: {
           status: transactionStatus,
-          response_code: response.response_code,
-          authorization_code: response.authorization_code,
-          amount: response.amount,
-          buy_order: response.buy_order,
+          response_code: json.response_code,
+          authorization_code: json.authorization_code,
+          amount: json.amount,
+          buy_order: json.buy_order,
         },
       });
     } catch (error) {
@@ -172,24 +200,37 @@ export const webpayController = {
       }
       
       try {
-        // Commit transaction with WebPay
-        const response = await webpayPlus.commit(token);
+        // Commit transaction with Transbank REST API
+        const response = await fetch(`${webpayConfig.apiUrl}/${token}`, {
+          method: 'PUT',
+          headers: {
+            'Tbk-Api-Key-Id': webpayConfig.commerceCode,
+            'Tbk-Api-Key-Secret': webpayConfig.apiKey,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Transbank API returned status ${response.status}`);
+        }
+
+        const json: any = await response.json();
         
         // Determine transaction status
         let transactionStatus: 'approved' | 'rejected' | 'failed' = 'failed';
-        if (response.response_code === 0) {
+        if (json.status === 'AUTHORIZED' && json.response_code === 0) {
           transactionStatus = 'approved';
-        } else if (response.response_code === -1) {
+        } else if (json.status === 'FAILED' || json.status === 'REJECTED') {
           transactionStatus = 'rejected';
         }
         
         // Update transaction in database
         await WebPayTransactionModel.updateWithResponse(token, {
           status: transactionStatus,
-          response_code: response.response_code?.toString(),
-          authorization_code: response.authorization_code,
-          transaction_date: response.transaction_date ? new Date(response.transaction_date) : new Date(),
-          raw_response: response,
+          response_code: json.response_code?.toString(),
+          authorization_code: json.authorization_code,
+          transaction_date: json.transaction_date ? new Date(json.transaction_date) : new Date(),
+          raw_response: json,
         });
         
         // If approved, confirm the order
@@ -255,7 +296,7 @@ export const webpayController = {
     try {
       const { token } = req.params;
       
-      const transaction = await WebPayTransactionModel.findByToken(token);
+      let transaction = await WebPayTransactionModel.findByToken(token);
       
       if (!transaction) {
         res.status(404).json({
@@ -265,9 +306,75 @@ export const webpayController = {
         return;
       }
       
+      // If transaction is still pending, commit it with Transbank REST API
+      if (transaction.status === 'pending') {
+        try {
+          const response = await fetch(`${webpayConfig.apiUrl}/${token}`, {
+            method: 'PUT',
+            headers: {
+              'Tbk-Api-Key-Id': webpayConfig.commerceCode,
+              'Tbk-Api-Key-Secret': webpayConfig.apiKey,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            const json: any = await response.json();
+            
+            // Determine transaction status
+            let transactionStatus: 'approved' | 'rejected' | 'failed' = 'failed';
+            if (json.status === 'AUTHORIZED' && json.response_code === 0) {
+              transactionStatus = 'approved';
+            } else if (json.status === 'FAILED' || json.status === 'REJECTED') {
+              transactionStatus = 'rejected';
+            }
+            
+            // Update transaction in database
+            await WebPayTransactionModel.updateWithResponse(token, {
+              status: transactionStatus,
+              response_code: json.response_code?.toString(),
+              authorization_code: json.authorization_code,
+              transaction_date: json.transaction_date ? new Date(json.transaction_date) : new Date(),
+              raw_response: json,
+            });
+            
+            // If approved, confirm the order
+            if (transactionStatus === 'approved') {
+              await OrderModel.confirm(transaction.orderId);
+            }
+            
+            // Fetch updated transaction
+            transaction = await WebPayTransactionModel.findByToken(token);
+          }
+        } catch (error: any) {
+          console.error('WebPay commit error:', error);
+          // Continue with existing transaction data
+        }
+      }
+      
+      // Get order details
+      const order = await OrderModel.findById(transaction!.orderId);
+      
+      // Convert Sequelize model to plain object
+      const transactionData: any = transaction!;
+      
       res.json({
         success: true,
-        data: transaction,
+        data: {
+          id: transactionData.id,
+          order_id: transactionData.orderId,
+          token: transactionData.token,
+          buy_order: transactionData.buyOrder,
+          amount: transactionData.amount,
+          status: transactionData.status,
+          response_code: transactionData.responseCode,
+          authorization_code: transactionData.authorizationCode,
+          transaction_date: transactionData.transactionDate,
+          created_at: transactionData.createdAt,
+          updated_at: transactionData.updatedAt,
+          order_number: order?.orderNumber,
+          order_status: order?.status,
+        },
       });
     } catch (error) {
       next(error);

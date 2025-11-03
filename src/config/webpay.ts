@@ -1,43 +1,27 @@
-import { WebpayPlus, Options, IntegrationApiKeys, Environment, IntegrationCommerceCodes } from 'transbank-sdk';
-
 // Determine environment
 const isProduction = process.env.WEBPAY_ENVIRONMENT === 'production';
 
-// Configure WebPay Plus
-let webpayPlus: any;
-
-if (isProduction) {
-  // Production configuration
-  const commerceCode = process.env.WEBPAY_COMMERCE_CODE;
-  const apiKey = process.env.WEBPAY_API_KEY;
-
-  if (!commerceCode || !apiKey) {
-    throw new Error('Production WebPay credentials not configured. Set WEBPAY_COMMERCE_CODE and WEBPAY_API_KEY.');
-  }
-
-  webpayPlus = new WebpayPlus.Transaction(
-    new Options(commerceCode, apiKey, Environment.Production)
-  );
-  
-  console.log('✓ WebPay Plus configured for PRODUCTION');
-} else {
-  // Integration/Testing configuration
-  webpayPlus = new WebpayPlus.Transaction(
-    new Options(
-      IntegrationCommerceCodes.WEBPAY_PLUS,
-      IntegrationApiKeys.WEBPAY,
-      Environment.Integration
-    )
-  );
-  
-  console.log('✓ WebPay Plus configured for INTEGRATION/TESTING');
-}
-
-// WebPay configuration values
+// Transbank WebPay Plus REST API Configuration
 export const webpayConfig = {
-  returnUrl: process.env.WEBPAY_RETURN_URL || 'http://localhost:3000/api/webpay/return',
-  callbackUrl: process.env.WEBPAY_CALLBACK_URL || 'http://localhost:3000/api/webpay/callback',
+  // API URLs
+  apiUrl: isProduction 
+    ? 'https://webpay3g.transbank.cl/rswebpaytransaction/api/webpay/v1.2/transactions'
+    : 'https://webpay3gint.transbank.cl/rswebpaytransaction/api/webpay/v1.2/transactions',
+  
+  // Credentials
+  commerceCode: isProduction 
+    ? process.env.WEBPAY_COMMERCE_CODE || ''
+    : '597055555532',
+  
+  apiKey: isProduction 
+    ? process.env.WEBPAY_API_KEY || ''
+    : '579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C',
+  
+  // Return URLs
+  returnUrl: process.env.WEBPAY_RETURN_URL || 'http://localhost:5173/payment/return',
+  
+  // Environment
   environment: isProduction ? 'production' : 'integration' as const,
 };
 
-export { webpayPlus };
+console.log(`✓ WebPay Plus configured for ${webpayConfig.environment.toUpperCase()}`);

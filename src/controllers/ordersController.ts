@@ -167,13 +167,13 @@ export const ordersController = {
       // Create order with tickets
       const result = await OrderModel.create(orderData, ticketsData);
       
+      // Get the full order with details
+      const orderWithDetails = await OrderModel.findByIdWithDetails(result.order.id);
+      
       res.status(201).json({
         success: true,
         message: 'Order created successfully',
-        data: {
-          order: result.order,
-          tickets: result.tickets,
-        },
+        data: orderWithDetails,
       });
     } catch (error) {
       next(error);
