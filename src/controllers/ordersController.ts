@@ -9,9 +9,23 @@ export const ordersController = {
   async getAllOrders(_req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const orders = await OrderModel.findAll();
+      
+      // Convert Sequelize models to plain objects
+      const ordersData = orders.map((order: any) => ({
+        id: order.id,
+        order_number: order.orderNumber,
+        customer_name: order.customerName,
+        customer_email: order.customerEmail,
+        customer_phone: order.customerPhone,
+        total_amount: order.totalAmount,
+        status: order.status,
+        created_at: order.createdAt,
+        updated_at: order.updatedAt,
+      }));
+      
       res.json({
         success: true,
-        data: orders,
+        data: ordersData,
       });
     } catch (error) {
       next(error);
