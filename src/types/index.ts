@@ -1,43 +1,73 @@
+// Enums
+export type TourType = 'option_1' | 'option_2' | 'option_3';
+export type OrderStatus = 'pending' | 'paid' | 'cancelled' | 'expired';
+export type TicketStatus = 'reserved' | 'confirmed' | 'used' | 'cancelled';
+export type WebPayStatus = 'pending' | 'approved' | 'rejected' | 'failed';
+export type TourInstanceStatus = 'active' | 'completed' | 'cancelled';
+
 // Database types
-export interface Event {
+export interface Tour {
   id: number;
   name: string;
   description?: string;
-  event_date: Date;
   location: string;
   address?: string;
-  capacity: number;
-  price: number;
+  tour_type: TourType;
+  base_price: number;
+  min_tickets: number;
+  max_capacity: number;
+  duration_minutes: number;
   is_active: boolean;
   created_at: Date;
   updated_at: Date;
 }
 
-export interface EventWithAvailability extends Event {
+export interface Wine {
+  id: number;
+  name: string;
+  variety?: string;
+  vintage?: number;
+  description?: string;
+  is_active: boolean;
+  created_at: Date;
+}
+
+export interface TourWine {
+  id: number;
+  tour_id: number;
+  wine_id: number;
+  display_order: number;
+}
+
+export interface TourInstance {
+  id: number;
+  tour_id: number;
+  instance_date: Date;
+  instance_time: string;
+  capacity: number;
   tickets_sold: number;
-  tickets_available: number;
+  status: TourInstanceStatus;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export interface Order {
   id: number;
   order_number: string;
+  tour_instance_id: number;
   customer_name: string;
   customer_email: string;
   customer_phone?: string;
+  ticket_quantity: number;
   total_amount: number;
   status: OrderStatus;
   created_at: Date;
   updated_at: Date;
 }
 
-export interface OrderWithDetails extends Order {
-  tickets: TicketWithEvent[];
-}
-
 export interface Ticket {
   id: number;
   order_id: number;
-  event_id: number;
   ticket_number: string;
   attendee_name?: string;
   status: TicketStatus;
@@ -45,21 +75,11 @@ export interface Ticket {
   updated_at: Date;
 }
 
-export interface TicketWithEvent extends Ticket {
-  event_name: string;
-  event_date: Date;
-  location: string;
-}
-
-export interface TicketWithDetails extends Ticket {
-  order_number: string;
-  customer_name: string;
-  customer_email: string;
-  order_status: OrderStatus;
-  event_name: string;
-  event_date: Date;
-  location: string;
-  address?: string;
+export interface OrderWine {
+  id: number;
+  order_id: number;
+  wine_id: number;
+  created_at: Date;
 }
 
 export interface WebPayTransaction {
@@ -77,6 +97,35 @@ export interface WebPayTransaction {
   updated_at: Date;
 }
 
+// Extended types with relationships
+export interface TourWithWines extends Tour {
+  wines: Wine[];
+}
+
+export interface TourInstanceWithTour extends TourInstance {
+  tour: Tour;
+}
+
+export interface TourInstanceAvailability {
+  instance_time: string;
+  capacity: number;
+  tickets_sold: number;
+  tickets_available: number;
+  instance_id?: number;
+}
+
+export interface OrderWithDetails extends Order {
+  tour_instance: TourInstanceWithTour;
+  tickets: Ticket[];
+  wines?: Wine[];
+}
+
+export interface TicketWithDetails extends Ticket {
+  order: Order;
+  tour_instance: TourInstanceWithTour;
+}
+
+// Statistics
 export interface TicketStatistics {
   total_tickets: number;
   reserved: number;
@@ -94,43 +143,41 @@ export interface TransactionStatistics {
   total_approved_amount: number;
 }
 
-// Status types
-export type OrderStatus = 'pending' | 'paid' | 'cancelled' | 'expired';
-export type TicketStatus = 'reserved' | 'confirmed' | 'used' | 'cancelled';
-export type WebPayStatus = 'pending' | 'approved' | 'rejected' | 'failed';
-
 // Request/Response types
-export interface CreateEventRequest {
-  name: string;
-  description?: string;
-  event_date: string | Date;
-  location: string;
-  address?: string;
-  capacity: number;
-  price: number;
-}
-
-export interface UpdateEventRequest {
-  name?: string;
-  description?: string;
-  event_date?: string | Date;
-  location?: string;
-  address?: string;
-  capacity?: number;
-  price?: number;
-  is_active?: boolean;
-}
-
-export interface CreateOrderRequest {
+export interface CreateBookingRequest {
+  tour_id: number;
+  instance_date: string; // YYYY-MM-DD
+  instance_time: string; // HH:MM
+  ticket_quantity: number;
+  wine_ids?: number[]; // Required for option_1, forbidden for option_2/option_3
   customer_name: string;
   customer_email: string;
   customer_phone?: string;
-  tickets: TicketRequest[];
 }
 
-export interface TicketRequest {
-  event_id: number;
-  attendee_name?: string;
+export interface CreateTourRequest {
+  name: string;
+  description?: string;
+  location: string;
+  address?: string;
+  tour_type: TourType;
+  base_price: number;
+  min_tickets: number;
+  max_capacity: number;
+  duration_minutes: number;
+}
+
+export interface UpdateTourRequest {
+  name?: string;
+  description?: string;
+  location?: string;
+  address?: string;
+  tour_type?: TourType;
+  base_price?: number;
+  min_tickets?: number;
+  max_capacity?: number;
+  duration_minutes?: number;
+  is_active?: boolean;
 }
 
 export interface InitiatePaymentRequest {

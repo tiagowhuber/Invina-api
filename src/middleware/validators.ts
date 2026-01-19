@@ -15,77 +15,36 @@ export const validate = (req: Request, res: Response, next: NextFunction): void 
   next();
 };
 
-// Event validation rules
-export const validateCreateEvent: ValidationChain[] = [
-  body('name')
-    .trim()
+// Booking validation rules
+export const validateBookingRequest: ValidationChain[] = [
+  body('tour_id')
     .notEmpty()
-    .withMessage('Event name is required')
-    .isLength({ max: 255 })
-    .withMessage('Event name must not exceed 255 characters'),
-  body('description')
-    .optional()
-    .trim(),
-  body('eventDate')
-    .notEmpty()
-    .withMessage('Event date is required')
-    .isISO8601()
-    .withMessage('Invalid date format'),
-  body('location')
-    .trim()
-    .notEmpty()
-    .withMessage('Location is required')
-    .isLength({ max: 255 })
-    .withMessage('Location must not exceed 255 characters'),
-  body('address')
-    .optional()
-    .trim(),
-  body('capacity')
-    .notEmpty()
-    .withMessage('Capacity is required')
+    .withMessage('Tour ID is required')
     .isInt({ min: 1 })
-    .withMessage('Capacity must be a positive integer'),
-  body('price')
+    .withMessage('Invalid tour ID'),
+  body('instance_date')
     .notEmpty()
-    .withMessage('Price is required')
-    .isFloat({ min: 0 })
-    .withMessage('Price must be a positive number'),
-];
-
-export const validateUpdateEvent: ValidationChain[] = [
-  param('id')
+    .withMessage('Instance date is required')
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .withMessage('Invalid date format. Use YYYY-MM-DD'),
+  body('instance_time')
+    .notEmpty()
+    .withMessage('Instance time is required')
+    .matches(/^([01]\d|2[0-3]):([0-5]\d)$/)
+    .withMessage('Invalid time format. Use HH:MM (24-hour format)'),
+  body('ticket_quantity')
+    .notEmpty()
+    .withMessage('Ticket quantity is required')
     .isInt({ min: 1 })
-    .withMessage('Invalid event ID'),
-  body('name')
+    .withMessage('Ticket quantity must be at least 1'),
+  body('wine_ids')
     .optional()
-    .trim()
-    .isLength({ max: 255 })
-    .withMessage('Event name must not exceed 255 characters'),
-  body('eventDate')
-    .optional()
-    .isISO8601()
-    .withMessage('Invalid date format'),
-  body('location')
-    .optional()
-    .trim()
-    .isLength({ max: 255 })
-    .withMessage('Location must not exceed 255 characters'),
-  body('capacity')
+    .isArray()
+    .withMessage('Wine IDs must be an array'),
+  body('wine_ids.*')
     .optional()
     .isInt({ min: 1 })
-    .withMessage('Capacity must be a positive integer'),
-  body('price')
-    .optional()
-    .isFloat({ min: 0 })
-    .withMessage('Price must be a positive number'),
-  body('is_active')
-    .optional()
-    .isBoolean()
-    .withMessage('is_active must be a boolean'),
-];
-
-// Order validation rules
-export const validateCreateOrder: ValidationChain[] = [
+    .withMessage('Invalid wine ID'),
   body('customer_name')
     .trim()
     .notEmpty()
@@ -104,17 +63,13 @@ export const validateCreateOrder: ValidationChain[] = [
     .trim()
     .isLength({ max: 50 })
     .withMessage('Phone number must not exceed 50 characters'),
-  body('tickets')
-    .isArray({ min: 1 })
-    .withMessage('At least one ticket is required'),
-  body('tickets.*.event_id')
+];
+
+// Tour query validation
+export const validateAvailabilityQuery: ValidationChain[] = [
+  param('id')
     .isInt({ min: 1 })
-    .withMessage('Invalid event ID'),
-  body('tickets.*.attendee_name')
-    .optional()
-    .trim()
-    .isLength({ max: 255 })
-    .withMessage('Attendee name must not exceed 255 characters'),
+    .withMessage('Invalid tour ID'),
 ];
 
 // WebPay validation rules

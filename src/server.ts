@@ -7,9 +7,8 @@ import morgan from 'morgan';
 import compression from 'compression';
 
 // Import routes
-import eventsRoutes from './routes/events';
-import ordersRoutes from './routes/orders';
-import ticketsRoutes from './routes/tickets';
+import toursRoutes from './routes/tours';
+import bookingsRoutes from './routes/bookings';
 import webpayRoutes from './routes/webpay';
 import adminRoutes from './routes/admin';
 
@@ -60,9 +59,8 @@ app.get('/health', (_req, res) => {
 });
 
 // API routes
-app.use('/api/events', eventsRoutes);
-app.use('/api/orders', ordersRoutes);
-app.use('/api/tickets', ticketsRoutes);
+app.use('/api/tours', toursRoutes);
+app.use('/api/bookings', bookingsRoutes);
 app.use('/api/webpay', webpayRoutes);
 app.use('/api/admin', adminRoutes);
 
@@ -70,12 +68,11 @@ app.use('/api/admin', adminRoutes);
 app.get('/', (_req, res) => {
   res.json({
     success: true,
-    message: 'Welcome to Invina Event Ticketing API',
-    version: '1.0.0',
+    message: 'Welcome to Invina Tour Booking API',
+    version: '2.0.0',
     endpoints: {
-      events: '/api/events',
-      orders: '/api/orders',
-      tickets: '/api/tickets',
+      tours: '/api/tours',
+      bookings: '/api/bookings',
       webpay: '/api/webpay',
       admin: '/api/admin',
       health: '/health',
@@ -97,7 +94,7 @@ const startServer = async () => {
     
     app.listen(PORT, () => {
       console.log('=================================');
-      console.log(`🚀 Invina API Server`);
+      console.log(`🚀 Invina Tour Booking API Server`);
       console.log(`=================================`);
       console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`Server running on port ${PORT}`);

@@ -1,5 +1,5 @@
 import { Table, Column, Model, DataType, BelongsTo, ForeignKey, PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt } from 'sequelize-typescript';
-import { OrderEntity } from './Order';
+import Order from './Order';
 import { sequelize } from '../config/database';
 import { WebPayStatus, TransactionStatistics } from '../types';
 
@@ -14,7 +14,7 @@ export class WebPayTransactionEntity extends Model {
   @Column(DataType.INTEGER)
   id!: number;
 
-  @ForeignKey(() => OrderEntity)
+  @ForeignKey(() => Order)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
@@ -85,8 +85,8 @@ export class WebPayTransactionEntity extends Model {
   })
   updatedAt!: Date;
 
-  @BelongsTo(() => OrderEntity)
-  order?: OrderEntity;
+  @BelongsTo(() => Order)
+  order?: Order;
 }
 
 interface TransactionData {

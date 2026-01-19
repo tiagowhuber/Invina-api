@@ -1,10 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import { webpayConfig } from '../config/webpay';
-import OrderModel from '../models/Order';
+import Order from '../models/Order';
+import Ticket from '../models/Ticket';
 import WebPayTransactionModel from '../models/WebPayTransaction';
 import { generateBuyOrder } from '../utils/generators';
 import { checkAndExpireOrder } from '../utils/cronJobs';
 import { InitiatePaymentRequest, ConfirmPaymentRequest } from '../types';
+import { sequelize } from '../config/database';
 
 export const webpayController = {
   // POST /api/webpay/initiate - Initiate WebPay transaction
@@ -21,7 +23,7 @@ export const webpayController = {
       }
       
       // Get order details
-      const order = await OrderModel.findById(order_id);
+      const order = await Order.findByPk(order_id);
       
       if (!order) {
         res.status(404).json({
@@ -51,8 +53,8 @@ export const webpayController = {
       
       // Generate buy order
       const buyOrder = generateBuyOrder();
-      const sessionId = `SESSION-${order.orderNumber}`;
-      const amount = Math.round(parseFloat(order.totalAmount.toString()));
+      const sessionId = `SESSION-${order.order_number}`;
+      const amount = Math.round(parseFloat(order.total_amount.toString()));
       
       // Create transaction with Transbank REST API
       const response = await fetch(webpayConfig.apiUrl, {
@@ -160,7 +162,16 @@ export const webpayController = {
       
       // If approved, confirm the order
       if (transactionStatus === 'approved') {
-        await OrderModel.confirm(transaction.orderId);
+        await sequelize.transaction(async (t) => {
+          await Order.update(
+            { status: 'paid' },
+            { where: { id: transaction.orderId }, transaction: t }
+          );
+          await Ticket.update(
+            { status: 'confirmed' },
+            { where: { order_id: transaction.orderId }, transaction: t }
+          );
+        });
       }
       
       res.json({
@@ -235,12 +246,21 @@ export const webpayController = {
         
         // If approved, confirm the order
         if (transactionStatus === 'approved') {
-          await OrderModel.confirm(transaction.orderId);
+          await sequelize.transaction(async (t) => {
+            await Order.update(
+              { status: 'paid' },
+              { where: { id: transaction.orderId }, transaction: t }
+            );
+            await Ticket.update(
+              { status: 'confirmed' },
+              { where: { order_id: transaction.orderId }, transaction: t }
+            );
+          });
         }
         
         // Get order details
         
-        const order = await OrderModel.findByIdWithDetails(transaction.orderId);        // Return HTML response (you can customize this)
+        const order = await Order.findByPk(transaction.orderId);        // Return HTML response (you can customize this)
         const html = `
           <!DOCTYPE html>
           <html>
@@ -339,8 +359,18 @@ export const webpayController = {
             });
             
             // If approved, confirm the order
-            if (transactionStatus === 'approved') {
-              await OrderModel.confirm(transaction.orderId);
+            if (transactionStatus === 'approved' && transaction) {
+              const orderId = transaction.orderId; // Capture to avoid null issues
+              await sequelize.transaction(async (t) => {
+                await Order.update(
+                  { status: 'paid' },
+                  { where: { id: orderId }, transaction: t }
+                );
+                await Ticket.update(
+                  { status: 'confirmed' },
+                  { where: { order_id: orderId }, transaction: t }
+                );
+              });
             }
             
             // Fetch updated transaction
@@ -353,7 +383,7 @@ export const webpayController = {
       }
       
       // Get order details
-      const order = await OrderModel.findById(transaction!.orderId);
+      const order = await Order.findByPk(transaction!.orderId);
       
       // Convert Sequelize model to plain object
       const transactionData: any = transaction!;
@@ -372,7 +402,7 @@ export const webpayController = {
           transaction_date: transactionData.transactionDate,
           created_at: transactionData.createdAt,
           updated_at: transactionData.updatedAt,
-          order_number: order?.orderNumber,
+          order_number: order?.order_number,
           order_status: order?.status,
         },
       });

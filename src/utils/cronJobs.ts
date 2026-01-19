@@ -1,4 +1,6 @@
-import Order from '../models/Order'; // Ensure the file '../models/Order.ts' exists or adjust the path
+import Order from '../models/Order';
+import Ticket from '../models/Ticket';
+import { sequelize } from '../config/database';
 
 /**
  * Manually expire pending orders
@@ -11,8 +13,13 @@ export async function expireOldOrders(): Promise<{ expired: number; errors: numb
   try {
     console.log('[OrderExpiration] Checking for expired orders...');
     
-    // Find expired pending orders
-    const expiredOrders = await Order.findExpiredPending(expirationMinutes);
+    // Find expired pending orders using raw SQL
+    const expiredOrders = await sequelize.query(
+      `SELECT * FROM orders 
+       WHERE status = 'pending' 
+       AND created_at < NOW() - INTERVAL '${expirationMinutes} minutes'`,
+      { type: 'SELECT', model: Order, mapToModel: true }
+    );
     
     if (expiredOrders.length === 0) {
       console.log('[OrderExpiration] No expired orders found');
@@ -26,12 +33,24 @@ export async function expireOldOrders(): Promise<{ expired: number; errors: numb
     // Cancel and expire each order
     for (const order of expiredOrders) {
       try {
-        await Order.cancel(order.id);
-        await Order.updateStatus(order.id, 'expired');
-        console.log(`[OrderExpiration] Expired order ${order.orderNumber} (ID: ${order.id})`);
+        await sequelize.transaction(async (t) => {
+          // Update order status to expired
+          await Order.update(
+            { status: 'expired' },
+            { where: { id: order.id }, transaction: t }
+          );
+          
+          // Update all tickets status to cancelled
+          await Ticket.update(
+            { status: 'cancelled' },
+            { where: { order_id: order.id }, transaction: t }
+          );
+        });
+        
+        console.log(`[OrderExpiration] Expired order ${(order as any).order_number} (ID: ${order.id})`);
       } catch (error: any) {
         errorCount++;
-        console.error(`[OrderExpiration] Error expiring order ${order.orderNumber}:`, error.message);
+        console.error(`[OrderExpiration] Error expiring order ${(order as any).order_number}:`, error.message);
       }
     }
     
@@ -50,19 +69,31 @@ export async function expireOldOrders(): Promise<{ expired: number; errors: numb
 export async function checkAndExpireOrder(orderId: number): Promise<boolean> {
   const expirationMinutes = parseInt(process.env.ORDER_EXPIRATION_MINUTES || '15');
   
-  const order = await Order.findById(orderId);
+  const order = await Order.findByPk(orderId);
   if (!order || order.status !== 'pending') {
     return false;
   }
   
-  const createdAt = new Date(order.createdAt);
+  const createdAt = new Date(order.created_at);
   const now = new Date();
   const minutesElapsed = (now.getTime() - createdAt.getTime()) / (1000 * 60);
   
   if (minutesElapsed >= expirationMinutes) {
-    await Order.cancel(orderId);
-    await Order.updateStatus(orderId, 'expired');
-    console.log(`[OrderExpiration] Order ${order.orderNumber} expired`);
+    await sequelize.transaction(async (t) => {
+      // Update order status to expired
+      await Order.update(
+        { status: 'expired' },
+        { where: { id: orderId }, transaction: t }
+      );
+      
+      // Update all tickets status to cancelled
+      await Ticket.update(
+        { status: 'cancelled' },
+        { where: { order_id: orderId }, transaction: t }
+      );
+    });
+    
+    console.log(`[OrderExpiration] Order ${order.order_number} expired`);
     return true;
   }
   

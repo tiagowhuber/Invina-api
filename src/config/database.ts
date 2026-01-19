@@ -19,13 +19,26 @@ const sequelize = new Sequelize({
 // Test database connection
 export const testConnection = async (): Promise<void> => {
   try {
-    // Import models after sequelize is initialized
-    const { EventEntity } = await import('../models/Event');
-    const { OrderEntity } = await import('../models/Order');
-    const { TicketEntity } = await import('../models/Ticket');
+    // Import new models after sequelize is initialized
+    const Tour = (await import('../models/Tour')).default;
+    const Wine = (await import('../models/Wine')).default;
+    const TourWine = (await import('../models/TourWine')).default;
+    const TourInstance = (await import('../models/TourInstance')).default;
+    const Order = (await import('../models/Order')).default;
+    const Ticket = (await import('../models/Ticket')).default;
+    const OrderWine = (await import('../models/OrderWine')).default;
     const { WebPayTransactionEntity } = await import('../models/WebPayTransaction');
     
-    sequelize.addModels([EventEntity, OrderEntity, TicketEntity, WebPayTransactionEntity]);
+    sequelize.addModels([
+      Tour,
+      Wine,
+      TourWine,
+      TourInstance,
+      Order,
+      Ticket,
+      OrderWine,
+      WebPayTransactionEntity,
+    ]);
     
     await sequelize.authenticate();
     console.log('✓ Connected to PostgreSQL database');
