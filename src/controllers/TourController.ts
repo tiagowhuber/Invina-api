@@ -1,13 +1,17 @@
 import { Request, Response } from 'express';
 import { AvailabilityService } from '../services/AvailabilityService';
 import Tour from '../models/Tour';
+import Wine from '../models/Wine';
 
 export class TourController {
   private availabilityService = new AvailabilityService();
 
   getAllTours = async (_req: Request, res: Response) => {
     try {
-        const tours = await Tour.findAll({ where: { isActive: true } });
+        const tours = await Tour.findAll({ 
+          where: { isActive: true },
+          include: [Wine]
+        });
         res.json(tours);
     } catch (err: any) {
         res.status(500).json({ error: err.message });
