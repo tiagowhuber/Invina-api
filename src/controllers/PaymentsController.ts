@@ -54,6 +54,12 @@ export class PaymentsController {
     }
   };
 
+  handleTestSuccess = async (req: Request, res: Response) => {
+    const orderNumber = req.query.order;
+    // The frontend submits a POST form here, we just redirect back to the success page.
+    res.redirect(`${process.env.FRONTEND_URL}/payment/success?order=${orderNumber}`);
+  };
+
   expireOrders = async (_req: Request, res: Response) => {
     try {
         const timeoutThreshold = moment().subtract(15, 'minutes').toDate();

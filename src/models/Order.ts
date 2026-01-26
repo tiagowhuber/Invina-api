@@ -2,7 +2,7 @@ import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany, Default
 import TourInstance from './TourInstance';
 import Payment from './Payment';
 
-@Table({ tableName: 'orders', timestamps: true, underscored: true })
+@Table({ tableName: 'orders', timestamps: true, underscored: true, updatedAt: false })
 export default class Order extends Model {
   @Default(DataType.UUIDV4)
   @Column({ type: DataType.UUID, unique: true, field: 'order_number' })

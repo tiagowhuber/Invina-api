@@ -8,6 +8,9 @@ const controller = new PaymentsController();
 router.post('/return', controller.handleReturn);
 router.get('/return', controller.handleReturn);
 
+// Test Mode bypass route
+router.post('/test-success', controller.handleTestSuccess);
+
 // Cron Job
 router.get('/expire-orders', controller.expireOrders);
 

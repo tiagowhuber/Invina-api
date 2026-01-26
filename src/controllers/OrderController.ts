@@ -3,6 +3,7 @@ import { validationResult } from 'express-validator';
 import { PricingService } from '../services/PricingService';
 import { PaymentService } from '../services/PaymentService';
 import Order from '../models/Order';
+import Payment from '../models/Payment';
 import TourInstance from '../models/TourInstance';
 import Tour from '../models/Tour';
 import { sequelize } from '../config/database';
@@ -63,6 +64,32 @@ export class OrderController {
         totalAmount,
         status: 'Pending'
       }, { transaction: t });
+
+      // TEST MODE CHECK
+      if (process.env.SKIP_PAYMENT === 'true') {
+        order.status = 'Confirmed';
+        await order.save({ transaction: t });
+
+        await Payment.create({
+            orderId: order.id,
+            provider: 'TEST_SKIP',
+            transactionId: `SKIP-${order.orderNumber}`,
+            amount: totalAmount,
+            status: 'Completed',
+            responsePayload: { message: 'Payment skipped via env var' }
+        }, { transaction: t });
+
+        await t.commit();
+
+        res.json({
+            orderNumber: order.orderNumber,
+            // Point to a backend route that simply redirects to frontend success
+            paymentUrl: `${process.env.API_URL}/api/payments/test-success?order=${order.orderNumber}`,
+            token: 'SKIP_TOKEN',
+            amount: totalAmount
+        });
+        return;
+      }
 
       await t.commit();
 
