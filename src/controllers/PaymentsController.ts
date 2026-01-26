@@ -8,51 +8,62 @@ import moment from 'moment';
 export class PaymentsController {
   private paymentService = new PaymentService();
 
-  // Webhook/Return from Transbank
+  // Webhook/Return from VirtualPOS (Redirect handler)
   handleReturn = async (req: Request, res: Response) => {
-    const { token_ws } = req.body; 
-    const token = token_ws || req.query.token_ws;
+    const token = req.query.token as string;
     
     if (!token) {
-      res.redirect(`${process.env.FRONTEND_URL}/payment/cancel`);
+      res.redirect(`${process.env.FRONTEND_URL}/payment/error`);
       return;
     }
 
-    try {
-      const commitResponse = await this.paymentService.commitTransaction(token as string);
-      
-      const payment = await Payment.findOne({ where: { transactionId: token as string } });
-      if (!payment) throw new Error('Payment not found');
-
-      const order = await Order.findByPk(payment.orderId);
-      if (!order) throw new Error('Order not found');
-
-      // Update statuses
-      if (commitResponse.status === 'AUTHORIZED') {
-        payment.status = 'Completed';
-        order.status = 'Confirmed';
-        payment.responsePayload = commitResponse;
-      } else {
-        payment.status = 'Failed';
-        order.status = 'Cancelled';
-        payment.responsePayload = commitResponse;
-      }
-
-      await payment.save();
-      await order.save();
-
-      // Redirect to Frontend
-      if (order.status === 'Confirmed') {
-        res.redirect(`${process.env.FRONTEND_URL}/payment/success?order=${order.orderNumber}`);
-      } else {
-        res.redirect(`${process.env.FRONTEND_URL}/payment/failure?order=${order.orderNumber}`);
-      }
-
-    } catch (err) {
-      console.error(err);
-      res.redirect(`${process.env.FRONTEND_URL}/payment/error`);
-    }
+    // Just redirect to frontend, let frontend trigger the verification
+    res.redirect(`${process.env.FRONTEND_URL}/payment/confirmation?token=${token}`);
   };
+
+  // Called by Frontend to verify status
+  verify = async (req: Request, res: Response) => {
+      const { token } = req.params;
+
+      try {
+        const commitResponse = await this.paymentService.commitTransaction(token);
+        
+        const payment = await Payment.findOne({ where: { transactionId: token } });
+        if (!payment) throw new Error('Payment not found');
+  
+        const order = await Order.findByPk(payment.orderId);
+        if (!order) throw new Error('Order not found');
+  
+        // Update statuses
+        const status = commitResponse.status;
+        if (status === 'authorized' || status === 'pagado') {
+          payment.status = 'Completed';
+          order.status = 'Confirmed';
+        } else {
+          // If not authorized yet, it might be pending or failed.
+          // virtualPos usually returns current status.
+          payment.status = (status === 'created' || status === 'pending') ? 'Pending' : 'Failed';
+          // Don't cancel order immediately if pending?
+          // If failed, cancel order?
+          if (payment.status === 'Failed') order.status = 'Cancelled';
+        }
+        
+        payment.responsePayload = commitResponse;
+  
+        await payment.save();
+        await order.save();
+  
+        res.json({
+            status: payment.status,
+            order: order,
+            details: commitResponse
+        });
+  
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Verification failed' });
+      }
+  }
 
   handleTestSuccess = async (req: Request, res: Response) => {
     const orderNumber = req.query.order;

@@ -8,6 +8,9 @@ const controller = new PaymentsController();
 router.post('/return', controller.handleReturn);
 router.get('/return', controller.handleReturn);
 
+// Frontend verification
+router.get('/verify/:token', controller.verify);
+
 // Test Mode bypass route
 router.post('/test-success', controller.handleTestSuccess);
 
