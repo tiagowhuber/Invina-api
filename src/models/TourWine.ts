@@ -1,46 +1,14 @@
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  ForeignKey,
-} from 'sequelize-typescript';
+import { Table, Column, Model, ForeignKey } from 'sequelize-typescript';
 import Tour from './Tour';
 import Wine from './Wine';
 
-@Table({
-  tableName: 'tour_wines',
-  underscored: true,
-  timestamps: false,
-})
-class TourWine extends Model {
-  @Column({
-    type: DataType.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-  })
-  id!: number;
-
+@Table({ tableName: 'tour_wines', timestamps: false, underscored: true })
+export default class TourWine extends Model {
   @ForeignKey(() => Tour)
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-  })
-  tour_id!: number;
+  @Column({ field: 'tour_id' })
+  tourId!: number;
 
   @ForeignKey(() => Wine)
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-  })
-  wine_id!: number;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-  })
-  display_order!: number;
+  @Column({ field: 'wine_id' })
+  wineId!: number;
 }
-
-export default TourWine;

@@ -1,100 +1,41 @@
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  CreatedAt,
-  UpdatedAt,
-  ForeignKey,
-  BelongsTo,
-  HasMany,
-  BelongsToMany,
-} from 'sequelize-typescript';
-import { OrderStatus } from '../types';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany, Default } from 'sequelize-typescript';
 import TourInstance from './TourInstance';
-import Ticket from './Ticket';
-import Wine from './Wine';
-import OrderWine from './OrderWine';
+import Payment from './Payment';
 
-@Table({
-  tableName: 'orders',
-  underscored: true,
-  timestamps: true,
-})
-class Order extends Model {
-  @Column({
-    type: DataType.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-  })
-  id!: number;
-
-  @Column({
-    type: DataType.STRING(50),
-    allowNull: false,
-    unique: true,
-  })
-  order_number!: string;
+@Table({ tableName: 'orders', timestamps: true, underscored: true })
+export default class Order extends Model {
+  @Default(DataType.UUIDV4)
+  @Column({ type: DataType.UUID, unique: true, field: 'order_number' })
+  orderNumber!: string;
 
   @ForeignKey(() => TourInstance)
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-  })
-  tour_instance_id!: number;
+  @Column({ field: 'tour_instance_id' })
+  tourInstanceId!: number;
 
-  @Column({
-    type: DataType.STRING(255),
-    allowNull: false,
-  })
-  customer_name!: string;
-
-  @Column({
-    type: DataType.STRING(255),
-    allowNull: false,
-  })
-  customer_email!: string;
-
-  @Column({
-    type: DataType.STRING(50),
-    allowNull: true,
-  })
-  customer_phone?: string;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-  })
-  ticket_quantity!: number;
-
-  @Column({
-    type: DataType.DECIMAL(10, 2),
-    allowNull: false,
-  })
-  total_amount!: number;
-
-  @Column({
-    type: DataType.STRING(50),
-    allowNull: false,
-    defaultValue: 'pending',
-  })
-  status!: OrderStatus;
-
-  @CreatedAt
-  created_at!: Date;
-
-  @UpdatedAt
-  updated_at!: Date;
-
-  // Associations
   @BelongsTo(() => TourInstance)
-  tour_instance!: TourInstance;
+  tourInstance!: TourInstance;
 
-  @HasMany(() => Ticket)
-  tickets!: Ticket[];
+  @Column({ type: DataType.STRING, allowNull: false, field: 'customer_name' })
+  customerName!: string;
 
-  @BelongsToMany(() => Wine, () => OrderWine)
-  wines!: Wine[];
+  @Column({ type: DataType.STRING, allowNull: false, field: 'customer_email' })
+  customerEmail!: string;
+
+  @Column({ type: DataType.STRING, field: 'customer_phone' })
+  customerPhone!: string;
+
+  @Column({ type: DataType.INTEGER, allowNull: false, field: 'attendees_count' })
+  attendeesCount!: number;
+
+  @Column({ type: DataType.DECIMAL(10, 2), allowNull: false, field: 'total_amount' })
+  totalAmount!: number;
+
+  @Column({ 
+    type: DataType.ENUM('Pending', 'Confirmed', 'Cancelled', 'Refunded'), 
+    defaultValue: 'Pending' 
+  })
+  status!: 'Pending' | 'Confirmed' | 'Cancelled' | 'Refunded';
+
+  @HasMany(() => Payment)
+  payments!: Payment[];
 }
-
-export default Order;

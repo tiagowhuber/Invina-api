@@ -1,0 +1,63 @@
+Project Overview: PostgreSQL Schema & Backend Design
+
+I need a PostgreSQL schema and backend logic notes for a tour booking system. The design should be simple, efficient, and optimized for low-traffic usage.
+
+Core Entities & Rules:
+
+Tours:
+
+Attributes: Description, Duration, Minimum attendants, Maximum attendants, Base_price, Tour Type (Standard or Special), Earliest_hour, Latest_hour, and Buffer_time (time required between tours for setup/cleanup).
+
+Logic:
+
+Standard Tours: Available Monday–Saturday.
+
+Special Tours: Available every day.
+
+Holidays: No tours on dates listed in a Feriados Irrenunciables table.
+
+Wines:
+
+There must be a wines table and a tour_wines table (Many-to-Many) to define which wines are tasted during a specific tour.
+
+Note: No separate "wine orders" table is needed; we are not selling bottles separately in this version.
+
+Orders (No Ticket Table):
+
+Instead of individual tickets, the Orders table must track the Customer Name and Attendees Count (group size).
+
+Attributes: id, order_number, tour_instance_id, customer_name, customer_email, customer_phone, attendees_count, total_amount, status.
+
+Tour Instances:
+
+Instances are generated dynamically when the first client books a specific slot.
+
+The table should track current_attendants to easily check capacity without summing orders every time.
+
+Payments:
+
+Attributes: id, order_id, provider, transaction_id, amount, status, response_payload, created_at.
+
+Reservation & Availability Rules:
+
+Standard Tours (Buffer Logic):
+
+Tours can occur multiple times a day.
+
+Rule: If a tour is booked at 11:00 AM, the system must block adjacent slots based on the Buffer_time. For example, with a 60-minute buffer, a booking at 11:00 AM makes 10:00 AM and 12:00 PM unavailable for new instances.
+
+Result: Future clients cannot create new instances at those times but can join the existing 11:00 AM instance (until max capacity is reached).
+
+Special Tours (Day Lock):
+
+These can only happen once per day.
+
+Rule: If Client A books a Special Tour at 12:00 PM on Monday, the entire rest of Monday becomes unavailable for new start times.
+
+Result: Client B can only join the existing 12:00 PM slot; they cannot schedule a Special Tour for any other time that day.
+
+Technical Constraints:
+
+Traffic: The system is low-traffic; race conditions are not a major concern.
+
+Automation: I would like a database trigger to automatically update the current_attendants count in the Tour_Instances table whenever an order is placed or cancelled.

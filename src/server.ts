@@ -1,127 +1,51 @@
 import 'reflect-metadata';
-import 'dotenv/config';
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
-
-// Import routes
-import toursRoutes from './routes/tours';
-import bookingsRoutes from './routes/bookings';
-import webpayRoutes from './routes/webpay';
-import adminRoutes from './routes/admin';
-
-// Import middleware
-import { errorHandler, notFoundHandler } from './middleware/errorHandler';
-
-// Import configs
 import { testConnection } from './config/database';
-import './config/webpay';
 
-// Create Express app
+import tourRoutes from './routes/tourRoutes';
+import orderRoutes from './routes/orderRoutes';
+import paymentRoutes from './routes/paymentRoutes';
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Security middleware
+// Middleware
 app.use(helmet());
-
-// CORS configuration
-const corsOptions = {
-  origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : '*',
-  credentials: true,
-  optionsSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
-
-// Compression middleware
+app.use(cors());
 app.use(compression());
-
-// Logging middleware
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
-} else {
-  app.use(morgan('combined'));
-}
-
-// Body parsing middleware
+app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Health check endpoint
+// Routes
+app.use('/api/tours', tourRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/admin', paymentRoutes); // For expire-orders
+
+// Health Check
 app.get('/health', (_req, res) => {
-  res.json({
-    success: true,
-    message: 'Invina API is running',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-  });
+  res.status(200).json({ status: 'OK' });
 });
 
-// API routes
-app.use('/api/tours', toursRoutes);
-app.use('/api/bookings', bookingsRoutes);
-app.use('/api/webpay', webpayRoutes);
-app.use('/api/admin', adminRoutes);
-
-// Root endpoint
-app.get('/', (_req, res) => {
-  res.json({
-    success: true,
-    message: 'Welcome to Invina Tour Booking API',
-    version: '2.0.0',
-    endpoints: {
-      tours: '/api/tours',
-      bookings: '/api/bookings',
-      webpay: '/api/webpay',
-      admin: '/api/admin',
-      health: '/health',
-    },
-  });
-});
-
-// 404 handler
-app.use(notFoundHandler);
-
-// Error handler (must be last)
-app.use(errorHandler);
-
-// Start server with database connection
-const startServer = async () => {
-  try {
-    // Test database connection
-    await testConnection();
-    
-    app.listen(PORT, () => {
-      console.log('=================================');
-      console.log(`🚀 Invina Tour Booking API Server`);
-      console.log(`=================================`);
-      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`Server running on port ${PORT}`);
-      console.log(`API URL: http://localhost:${PORT}`);
-      console.log(`Health check: http://localhost:${PORT}/health`);
-      console.log('=================================');
-      console.log('ℹ️  Order expiration: Call POST /api/admin/expire-orders manually');
-      console.log('   or set up external cron (Vercel Cron, GitHub Actions, etc.)');
-      console.log('=================================');
-    });
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  }
+// Start Server
+const start = async () => {
+    // Only connect logic if not imported (e.g. for tests)
+    if (require.main === module) {
+        await testConnection();
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
+        });
+    }
 };
 
-startServer();
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM signal received: closing HTTP server');
-  process.exit(0);
-});
-
-process.on('SIGINT', () => {
-  console.log('SIGINT signal received: closing HTTP server');
-  process.exit(0);
-});
+start();
 
 export default app;

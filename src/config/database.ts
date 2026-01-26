@@ -25,9 +25,8 @@ export const testConnection = async (): Promise<void> => {
     const TourWine = (await import('../models/TourWine')).default;
     const TourInstance = (await import('../models/TourInstance')).default;
     const Order = (await import('../models/Order')).default;
-    const Ticket = (await import('../models/Ticket')).default;
-    const OrderWine = (await import('../models/OrderWine')).default;
-    const { WebPayTransactionEntity } = await import('../models/WebPayTransaction');
+    const Payment = (await import('../models/Payment')).default;
+    const Holiday = (await import('../models/Holiday')).default;
     
     sequelize.addModels([
       Tour,
@@ -35,9 +34,8 @@ export const testConnection = async (): Promise<void> => {
       TourWine,
       TourInstance,
       Order,
-      Ticket,
-      OrderWine,
-      WebPayTransactionEntity,
+      Payment,
+      Holiday,
     ]);
     
     await sequelize.authenticate();
