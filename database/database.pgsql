@@ -19,7 +19,8 @@ CREATE TABLE wines (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     varietal VARCHAR(100),
-    vintage INTEGER
+    vintage INTEGER,
+    image_url TEXT
 );
 
 -- Holidays: Dates where operations are suspended
@@ -49,6 +50,14 @@ CREATE TABLE tour_wines (
     tour_id INTEGER REFERENCES tours(id) ON DELETE CASCADE,
     wine_id INTEGER REFERENCES wines(id) ON DELETE CASCADE,
     PRIMARY KEY (tour_id, wine_id)
+);
+
+-- Tour Images: Multiple images per tour
+CREATE TABLE tour_images (
+    id SERIAL PRIMARY KEY,
+    tour_id INTEGER REFERENCES tours(id) ON DELETE CASCADE,
+    image_url TEXT NOT NULL,
+    display_order INTEGER DEFAULT 0
 );
 
 -- ==========================================

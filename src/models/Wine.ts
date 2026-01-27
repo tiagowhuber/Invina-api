@@ -13,6 +13,9 @@ export default class Wine extends Model {
   @Column(DataType.INTEGER)
   vintage!: number;
 
+  @Column({ type: DataType.TEXT, field: 'image_url' })
+  imageUrl!: string;
+
   @BelongsToMany(() => Tour, () => TourWine)
   tours!: Tour[];
 }

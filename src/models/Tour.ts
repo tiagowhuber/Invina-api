@@ -2,6 +2,7 @@ import { Table, Column, Model, DataType, BelongsToMany, HasMany } from 'sequeliz
 import Wine from './Wine';
 import TourWine from './TourWine';
 import TourInstance from './TourInstance';
+import TourImage from './TourImage';
 
 @Table({ tableName: 'tours', timestamps: false, underscored: true })
 export default class Tour extends Model {
@@ -40,4 +41,7 @@ export default class Tour extends Model {
 
   @HasMany(() => TourInstance)
   instances!: TourInstance[];
+  
+  @HasMany(() => TourImage, 'tourId')
+  images!: TourImage[];
 }
