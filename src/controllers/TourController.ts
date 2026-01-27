@@ -3,6 +3,7 @@ import { AvailabilityService } from '../services/AvailabilityService';
 import Tour from '../models/Tour';
 import Wine from '../models/Wine';
 import TourImage from '../models/TourImage';
+import Menu from '../models/Menu';
 
 export class TourController {
   private availabilityService = new AvailabilityService();
@@ -13,7 +14,8 @@ export class TourController {
           where: { isActive: true },
           include: [
             Wine,
-            { model: TourImage, as: 'images' }
+            { model: TourImage, as: 'images' },
+            { model: Menu, include: [Wine], required: false }
           ],
           order: [
              ['id', 'ASC'],

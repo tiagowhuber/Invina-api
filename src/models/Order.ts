@@ -1,6 +1,7 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany, Default } from 'sequelize-typescript';
 import TourInstance from './TourInstance';
 import Payment from './Payment';
+import Menu from './Menu';
 
 @Table({ tableName: 'orders', timestamps: true, underscored: true, updatedAt: false })
 export default class Order extends Model {
@@ -14,6 +15,13 @@ export default class Order extends Model {
 
   @BelongsTo(() => TourInstance)
   tourInstance!: TourInstance;
+
+  @ForeignKey(() => Menu)
+  @Column({ type: DataType.INTEGER, field: 'menu_id', allowNull: true })
+  menuId!: number | null;
+
+  @BelongsTo(() => Menu)
+  menu!: Menu | null;
 
   @Column({ type: DataType.STRING, allowNull: false, field: 'customer_name' })
   customerName!: string;

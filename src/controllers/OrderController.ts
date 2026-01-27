@@ -6,6 +6,7 @@ import Order from '../models/Order';
 import Payment from '../models/Payment';
 import TourInstance from '../models/TourInstance';
 import Tour from '../models/Tour';
+import Menu from '../models/Menu';
 import { sequelize } from '../config/database';
 
 export class OrderController {
@@ -19,11 +20,19 @@ export class OrderController {
       return;
     }
 
-    const { tourId, date, time, customerName, customerEmail, customerPhone, attendeesCount } = req.body;
+    const { tourId, date, time, customerName, customerEmail, customerPhone, attendeesCount, menuId } = req.body;
     
     const t = await sequelize.transaction();
 
     try {
+      // 0. Validate Menu Requirement (Fail fast)
+      const activeMenusCount = await Menu.count({ where: { tourId, isActive: true } });
+      if (activeMenusCount > 0 && !menuId) {
+          await t.rollback();
+          res.status(400).json({ error: 'Menu selection is required for this tour' });
+          return;
+      }
+
       // 1. Ensure Tour Instance Exists or Create it
       let instance = await TourInstance.findOne({
         where: {
@@ -52,11 +61,12 @@ export class OrderController {
       }
 
       // 2. Calculate Price
-      const totalAmount = await this.pricingService.calculatePrice(tourId, attendeesCount);
+      const totalAmount = await this.pricingService.calculatePrice(tourId, attendeesCount, menuId);
 
       // 3. Create Order
       const order = await Order.create({
         tourInstanceId: instance.id,
+        menuId: menuId || null,
         customerName,
         customerEmail,
         customerPhone,

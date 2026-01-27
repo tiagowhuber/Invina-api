@@ -1,6 +1,8 @@
 import { Table, Column, Model, DataType, BelongsToMany } from 'sequelize-typescript';
 import Tour from './Tour';
 import TourWine from './TourWine';
+import Menu from './Menu';
+import MenuWine from './MenuWine';
 
 @Table({ tableName: 'wines', timestamps: false, underscored: true })
 export default class Wine extends Model {
@@ -18,4 +20,7 @@ export default class Wine extends Model {
 
   @BelongsToMany(() => Tour, () => TourWine)
   tours!: Tour[];
+
+  @BelongsToMany(() => Menu, () => MenuWine)
+  menus!: Menu[];
 }

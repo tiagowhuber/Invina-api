@@ -28,6 +28,8 @@ export const testConnection = async (): Promise<void> => {
     const Payment = (await import('../models/Payment')).default;
     const Holiday = (await import('../models/Holiday')).default;
     const TourImage = (await import('../models/TourImage')).default;
+    const Menu = (await import('../models/Menu')).default;
+    const MenuWine = (await import('../models/MenuWine')).default;
     
     sequelize.addModels([
       Tour,
@@ -38,6 +40,8 @@ export const testConnection = async (): Promise<void> => {
       Payment,
       Holiday,
       TourImage,
+      Menu,
+      MenuWine,
     ]);
     
     await sequelize.authenticate();

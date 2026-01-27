@@ -86,7 +86,32 @@ FROM tours t, wines w
 WHERE t.description = 'Premium Sunset Experience' 
 AND w.name IN ('Carmenere Gran Reserva', 'Syrah Private Collection', 'Pinot Noir Selection');
 
--- 5. (Optional) Seed a "Day Lock" scenario
+-- 5. Add Menus for Premium Tour
+-- Let's give the "Premium Sunset Experience" two menu options
+WITH premium_tour AS (
+    SELECT id FROM tours WHERE description = 'Premium Sunset Experience' LIMIT 1
+)
+INSERT INTO menus (tour_id, name, description, price, is_active)
+VALUES
+    ((SELECT id FROM premium_tour), 'Standard Selection', 'The classic premium experience.', 55000.00, TRUE),
+    ((SELECT id FROM premium_tour), 'Exclusive Reserve', 'Top-tier wines from our private cellar.', 75000.00, TRUE);
+
+-- 6. Associate Wines to Menus
+-- Standard Menu: Wines 2, 4
+INSERT INTO menu_wines (menu_id, wine_id)
+SELECT m.id, w.id 
+FROM menus m, wines w
+WHERE m.name = 'Standard Selection' 
+AND w.name IN ('Carmenere Gran Reserva', 'Syrah Private Collection');
+
+-- Exclusive Menu: Wines 4, 5 and a standard one
+INSERT INTO menu_wines (menu_id, wine_id)
+SELECT m.id, w.id 
+FROM menus m, wines w
+WHERE m.name = 'Exclusive Reserve' 
+AND w.name IN ('Syrah Private Collection', 'Pinot Noir Selection', 'Cabernet Sauvignon Reserva');
+
+-- 7. (Optional) Seed a "Day Lock" scenario
 -- Let's say someone booked the Special Tour on a specific future date.
 -- This should prevent ANY other bookings on that day when testing.
 -- Date: 2026-03-15 (Example)

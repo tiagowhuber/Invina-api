@@ -60,6 +60,23 @@ CREATE TABLE tour_images (
     display_order INTEGER DEFAULT 0
 );
 
+-- Menus: Different pricing tiers/options for a tour
+CREATE TABLE menus (
+    id SERIAL PRIMARY KEY,
+    tour_id INTEGER REFERENCES tours(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Menu Wines: Specific wines for a specific menu
+CREATE TABLE menu_wines (
+    menu_id INTEGER REFERENCES menus(id) ON DELETE CASCADE,
+    wine_id INTEGER REFERENCES wines(id) ON DELETE CASCADE,
+    PRIMARY KEY (menu_id, wine_id)
+);
+
 -- ==========================================
 -- 3. OPERATIONAL TABLES
 -- ==========================================
@@ -82,6 +99,7 @@ CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
     order_number UUID DEFAULT uuid_generate_v4() UNIQUE,
     tour_instance_id INTEGER REFERENCES tour_instances(id),
+    menu_id INTEGER REFERENCES menus(id),
     customer_name VARCHAR(255) NOT NULL,
     customer_email VARCHAR(255) NOT NULL,
     customer_phone VARCHAR(50),

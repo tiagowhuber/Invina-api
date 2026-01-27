@@ -3,6 +3,7 @@ import Wine from './Wine';
 import TourWine from './TourWine';
 import TourInstance from './TourInstance';
 import TourImage from './TourImage';
+import Menu from './Menu';
 
 @Table({ tableName: 'tours', timestamps: false, underscored: true })
 export default class Tour extends Model {
@@ -38,6 +39,9 @@ export default class Tour extends Model {
 
   @BelongsToMany(() => Wine, () => TourWine)
   wines!: Wine[];
+
+  @HasMany(() => Menu)
+  menus!: Menu[];
 
   @HasMany(() => TourInstance)
   instances!: TourInstance[];
