@@ -22,6 +22,7 @@ INSERT INTO feriados_irrenunciables (holiday_date, description) VALUES
 -- A. Standard Tour (Classic Tasting)
 -- Available Mon-Sat (enforced by code), multiple times a day.
 INSERT INTO tours (
+    name,
     description, 
     duration_minutes, 
     min_attendants, 
@@ -33,7 +34,8 @@ INSERT INTO tours (
     buffer_minutes, 
     is_active
 ) VALUES (
-    'Classic Wine Tasting', -- description
+    'Classic Wine Tasting',
+    'Experience our classic wine selection (Mon-Sat).', -- description
     60, -- duration (1 hour)
     1, -- min
     15, -- max
@@ -48,6 +50,7 @@ INSERT INTO tours (
 -- B. Special Tour (Premium Sunset)
 -- Available Every Day, but locks the whole day once booked.
 INSERT INTO tours (
+    name,
     description, 
     duration_minutes, 
     min_attendants, 
@@ -59,7 +62,8 @@ INSERT INTO tours (
     buffer_minutes, 
     is_active
 ) VALUES (
-    'Premium Sunset Experience', 
+    'Premium Sunset Experience',
+    'Exclusive experiences available every day.', 
     120, -- duration (2 hours)
     2, -- min
     10, -- max
@@ -76,20 +80,20 @@ INSERT INTO tours (
 INSERT INTO tour_wines (tour_id, wine_id)
 SELECT t.id, w.id 
 FROM tours t, wines w 
-WHERE t.description = 'Classic Wine Tasting' 
+WHERE t.name = 'Classic Wine Tasting' 
 AND w.name IN ('Cabernet Sauvignon Reserva', 'Carmenere Gran Reserva', 'Sauvignon Blanc Estate');
 
 -- Tour 2 (Premium) gets wines 2, 4, 5
 INSERT INTO tour_wines (tour_id, wine_id)
 SELECT t.id, w.id 
 FROM tours t, wines w 
-WHERE t.description = 'Premium Sunset Experience' 
+WHERE t.name = 'Premium Sunset Experience' 
 AND w.name IN ('Carmenere Gran Reserva', 'Syrah Private Collection', 'Pinot Noir Selection');
 
 -- 5. Add Menus for Premium Tour
 -- Let's give the "Premium Sunset Experience" two menu options
 WITH premium_tour AS (
-    SELECT id FROM tours WHERE description = 'Premium Sunset Experience' LIMIT 1
+    SELECT id FROM tours WHERE name = 'Premium Sunset Experience' LIMIT 1
 )
 INSERT INTO menus (tour_id, name, description, price, is_active)
 VALUES
@@ -134,4 +138,21 @@ VALUES (
     'Confirmed'
 );
 */
+
+-- 8. Add Tour Images for Tour 1
+INSERT INTO tour_images (tour_id, image_url, display_order)
+VALUES
+    (1, '/images/tours/TourEstandar1/Arearecepcióndeuvas1.jpg', 6),
+    (1, '/images/tours/TourEstandar1/Bodegadefermentacionyguarda1.jpg', 7),
+    (1, '/images/tours/TourEstandar1/Bodegadefermentacionyguarda2.jpg', 8),
+    (1, '/images/tours/TourEstandar1/DegustaciondeVinos1.jpg', 11),
+    (1, '/images/tours/TourEstandar1/DegustaciondeVinos2.jpg', 12),
+    (1, '/images/tours/TourEstandar1/DegustaciondeVinos3.jpg', 13),
+    (1, '/images/tours/TourEstandar1/JardinVariedades1.jpg', 1),
+    (1, '/images/tours/TourEstandar1/JardinVariedades2.jpg', 2),
+    (1, '/images/tours/TourEstandar1/LineadeEmbotellado1.jpg', 9),
+    (1, '/images/tours/TourEstandar1/LineadeEmbotellado2.jpg', 10),
+    (1, '/images/tours/TourEstandar1/MiradorElTrampolin1.jpg', 3),
+    (1, '/images/tours/TourEstandar1/MiradorElTrampolin2.jpg', 4),
+    (1, '/images/tours/TourEstandar1/MiradorElTrampolin3.jpg', 5);
 

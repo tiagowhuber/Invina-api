@@ -7,6 +7,9 @@ import Menu from './Menu';
 
 @Table({ tableName: 'tours', timestamps: false, underscored: true })
 export default class Tour extends Model {
+  @Column({ type: DataType.STRING, allowNull: false })
+  name!: string;
+
   @Column({ type: DataType.TEXT, allowNull: false })
   description!: string;
 
