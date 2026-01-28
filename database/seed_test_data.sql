@@ -117,6 +117,88 @@ INSERT INTO menus (tour_id, name, description, price, is_active) VALUES
 (1, 'Carmenere, la Cepa Perdida', 'Deguste la cepa emblemática de Chile en diferentes niveles y mezclas de la viña premiada por producir el mejor Carmenere de Chile. Degustación de 5 vinos y deguste también nuestro Berry Nice, vino único 100% fermentado de arándanos.', 25000, TRUE),
 (1, 'Íconos', 'La línea Icono de Invina, todos premiados con 90 puntos o más por críticos internacionalmente reconocidos. Vinos intensos, expresivos y sorprendente. Cada vino expresa su personalidad única, así creando una aventura degustativa', 35000, TRUE);
 
+-- ==========================================
+-- 5. INSERT MENU_WINES
+-- ==========================================
+-- Menu 1: Sierra Batuco (SB, PG, CH, PN, MB, CR, CS)
+INSERT INTO menu_wines (menu_id, wine_id) VALUES
+(1, 15), -- Sauvignon Blanc
+(1, 12), -- Pinot Grigio
+(1, 5),  -- Chardonnay
+(1, 13), -- Pinot Noir
+(1, 7),  -- Malbec
+(1, 4),  -- Carmenere
+(1, 2);  -- Cabernet Sauvignon
+
+-- Menu 2: Tricky Rabbit (SBCR, CHVI, MBSY, PNSY, CFCR, CSSY, TEME)
+INSERT INTO menu_wines (menu_id, wine_id) VALUES
+(2, 21), -- Sauvignon Blanc - Carmenere
+(2, 22), -- Chardonnay - Viognier
+(2, 23), -- Malbec - Syrah
+(2, 24), -- Pinot Noir - Syrah
+(2, 25), -- Cabernet Franc - Carmenere
+(2, 26), -- Cabernet Sauvignon - Syrah
+(2, 27); -- Tempranillo - Merlot
+
+-- Menu 3: Luma Chequen (CH, PN, CR, CS, RB)
+INSERT INTO menu_wines (menu_id, wine_id) VALUES
+(3, 5),  -- Chardonnay
+(3, 13), -- Pinot Noir
+(3, 4),  -- Carmenere
+(3, 2),  -- Cabernet Sauvignon
+(3, 14); -- Red Blend
+
+-- Menu 4: Carmenere, la Cepa Perdida
+INSERT INTO menu_wines (menu_id, wine_id) VALUES
+(4, 21), -- Sauvignon Blanc - Carmenere (Tricky Rabbit)
+(4, 4),  -- Carmenere (Sierra Batuco Reserva)
+(4, 25), -- Cabernet Franc - Carmenere (Tricky Rabbit)
+
+-- Menu 5: Íconos
+INSERT INTO menu_wines (menu_id, wine_id) VALUES
+(5, 4),  -- Carmenere (Cuartel 4A)
+(5, 14), -- Red Blend (DeCabeza Blend Mediterraneo, Ojos Verdes)
+(5, 17); -- Tempranillo (Secano Tempranillo)
+
+-- ==========================================
+-- 6. INSERT TOUR_WINES
+-- ==========================================
+-- Note: Based on the document, tour_wines appears to represent wines available/featured in tours
+-- Tour Bodega InVina includes all menus, so all wines from menus apply
+-- Adding all unique wines that appear across all menus for Tour Bodega InVina
+
+INSERT INTO tour_wines (tour_id, wine_id) VALUES
+-- Tour 1: Tour Bodega InVina (all wines from all menus)
+(1, 2),  -- Cabernet Sauvignon
+(1, 4),  -- Carmenere
+(1, 5),  -- Chardonnay
+(1, 7),  -- Malbec
+(1, 12), -- Pinot Grigio
+(1, 13), -- Pinot Noir
+(1, 14), -- Red Blend
+(1, 15), -- Sauvignon Blanc
+(1, 17), -- Tempranillo
+(1, 21), -- Sauvignon Blanc - Carmenere
+(1, 22), -- Chardonnay - Viognier
+(1, 23), -- Malbec - Syrah
+(1, 24), -- Pinot Noir - Syrah
+(1, 25), -- Cabernet Franc - Carmenere
+(1, 26), -- Cabernet Sauvignon - Syrah
+(1, 27); -- Tempranillo - Merlot
+
+-- Tour 4: Batuco Paradise
+-- Wines: Chardonnay (Luma Chequen Gran Reserva), Carmenere (Cuartel 4A), Red Blend (DeCabeza, Ojos Verdes), Tempranillo (Secano)
+(4, 5),  -- Chardonnay
+(4, 4),  -- Carmenere
+(4, 14), -- Red Blend
+(4, 17), -- Tempranillo
+
+-- Tour 5: Maule Profundo
+-- Wines: Carmenere (Cuartel 4A), Red Blend (DeCabeza, Ojos Verdes), Tempranillo (Secano)
+(5, 4),  -- Carmenere
+(5, 14), -- Red Blend
+(5, 17); -- Tempranillo
+
 -- 5. Add Tour Images for Tour 1
 INSERT INTO tour_images (tour_id, image_url, display_order)
 VALUES
