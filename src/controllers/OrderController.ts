@@ -20,7 +20,7 @@ export class OrderController {
       return;
     }
 
-    const { tourId, date, time, customerName, customerEmail, customerPhone, attendeesCount, menuId } = req.body;
+    const { tourId, date, time, customerName, customerRut, customerEmail, customerPhone, attendeesCount, menuId } = req.body;
     
     const t = await sequelize.transaction();
 
@@ -68,6 +68,7 @@ export class OrderController {
         tourInstanceId: instance.id,
         menuId: menuId || null,
         customerName,
+        customerRut,
         customerEmail,
         customerPhone,
         attendeesCount,
@@ -101,10 +102,16 @@ export class OrderController {
         return;
       }
 
-      await t.commit();
-
       // 4. Initiate Payment
-      const paymentResponse = await this.paymentService.createTransaction(order);
+      const paymentResponse = await this.paymentService.createTransaction(order, t);
+      console.log('Payment Response:', paymentResponse);
+      if (!paymentResponse || !paymentResponse.url || !paymentResponse.token) {
+         await t.rollback();
+         res.status(502).json({ error: 'Payment provider did not return checkout URL' });
+         return;
+      }
+
+      await t.commit();
 
       // Return payment URL to frontend
       res.json({

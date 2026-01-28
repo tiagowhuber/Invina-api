@@ -101,6 +101,7 @@ CREATE TABLE orders (
     tour_instance_id INTEGER REFERENCES tour_instances(id),
     menu_id INTEGER REFERENCES menus(id),
     customer_name VARCHAR(255) NOT NULL,
+    customer_rut VARCHAR(50) NOT NULL,
     customer_email VARCHAR(255) NOT NULL,
     customer_phone VARCHAR(50),
     attendees_count INTEGER NOT NULL CHECK (attendees_count > 0),

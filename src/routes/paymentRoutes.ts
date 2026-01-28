@@ -12,7 +12,7 @@ router.get('/return', controller.handleReturn);
 router.get('/verify/:token', controller.verify);
 
 // Test Mode bypass route
-router.post('/test-success', controller.handleTestSuccess);
+router.get('/test-success', controller.handleTestSuccess);
 
 // Cron Job
 router.get('/expire-orders', controller.expireOrders);

@@ -26,6 +26,9 @@ export default class Order extends Model {
   @Column({ type: DataType.STRING, allowNull: false, field: 'customer_name' })
   customerName!: string;
 
+  @Column({ type: DataType.STRING, allowNull: false, field: 'customer_rut' })
+  customerRut!: string;
+
   @Column({ type: DataType.STRING, allowNull: false, field: 'customer_email' })
   customerEmail!: string;
 
