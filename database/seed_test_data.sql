@@ -1,145 +1,123 @@
 -- ==========================================
--- SEED DATA FOR TESTING (Invina)
+-- INSERT DATA SCRIPT FOR INVINA TOURS
 -- ==========================================
 
--- 1. Insert Wines
-INSERT INTO wines (name, varietal, vintage) VALUES
-('Cabernet Sauvignon Reserva', 'Cabernet Sauvignon', 2020),
-('Carmenere Gran Reserva', 'Carmenere', 2019),
-('Sauvignon Blanc Estate', 'Sauvignon Blanc', 2023),
-('Syrah Private Collection', 'Syrah', 2018),
-('Pinot Noir Selection', 'Pinot Noir', 2022);
+-- ==========================================
+-- 1. INSERT WINES
+-- ==========================================
+INSERT INTO wines (name, varietal, vintage, image_url) VALUES
+('Cabernet Franc', NULL, NULL, NULL),
+('Cabernet Sauvignon', NULL, NULL, NULL),
+('Carignan', NULL, NULL, NULL),
+('Carmenere', NULL, NULL, NULL),
+('Chardonnay', NULL, NULL, NULL),
+('Garnacha', NULL, NULL, NULL),
+('Malbec', NULL, NULL, NULL),
+('Merlot', NULL, NULL, NULL),
+('Mourvedre', NULL, NULL, NULL),
+('Pais', NULL, NULL, NULL),
+('Petit Verdot', NULL, NULL, NULL),
+('Pinot Grigio', NULL, NULL, NULL),
+('Pinot Noir', NULL, NULL, NULL),
+('Red Blend', NULL, NULL, NULL),
+('Sauvignon Blanc', NULL, NULL, NULL),
+('Syrah', NULL, NULL, NULL),
+('Tempranillo', NULL, NULL, NULL),
+('Tinto', NULL, NULL, NULL),
+('Tintorero', NULL, NULL, NULL),
+('Viognier', NULL, NULL, NULL),
+('Sauvignon Blanc - Carmenere', NULL, NULL, NULL),
+('Chardonnay - Viognier', NULL, NULL, NULL),
+('Malbec - Syrah', NULL, NULL, NULL),
+('Pinot Noir - Syrah', NULL, NULL, NULL),
+('Cabernet Franc - Carmenere', NULL, NULL, NULL),
+('Cabernet Sauvignon - Syrah', NULL, NULL, NULL),
+('Tempranillo - Merlot', NULL, NULL, NULL);
 
--- 2. Insert Holidays (Feriados Irrenunciables)
--- Dates where NO tours are allowed.
+-- ==========================================
+-- 2. INSERT FERIADOS IRRENUNCIABLES (Chile 2026-2027)
+-- ==========================================
+-- 2026
 INSERT INTO feriados_irrenunciables (holiday_date, description) VALUES
-('2026-05-01', 'Labor Day'),
-('2026-09-18', 'Independence Day'),
-('2026-09-19', 'Army Day'),
-('2026-12-25', 'Christmas');
+('2026-01-01', 'Año Nuevo'),
+('2026-04-03', 'Viernes Santo'),
+('2026-04-04', 'Sábado Santo'),
+('2026-05-01', 'Día del Trabajo'),
+('2026-05-21', 'Día de las Glorias Navales'),
+('2026-06-29', 'San Pedro y San Pablo'),
+('2026-07-16', 'Día de la Virgen del Carmen'),
+('2026-08-15', 'Asunción de la Virgen'),
+('2026-09-18', 'Independencia Nacional'),
+('2026-09-19', 'Día de las Glorias del Ejército'),
+('2026-10-12', 'Encuentro de Dos Mundos'),
+('2026-10-31', 'Día de las Iglesias Evangélicas y Protestantes'),
+('2026-11-01', 'Día de Todos los Santos'),
+('2026-12-08', 'Inmaculada Concepción'),
+('2026-12-25', 'Navidad'),
+-- 2027
+('2027-01-01', 'Año Nuevo'),
+('2027-03-26', 'Viernes Santo'),
+('2027-03-27', 'Sábado Santo'),
+('2027-05-01', 'Día del Trabajo'),
+('2027-05-21', 'Día de las Glorias Navales'),
+('2027-06-28', 'San Pedro y San Pablo'),
+('2027-07-16', 'Día de la Virgen del Carmen'),
+('2027-08-15', 'Asunción de la Virgen'),
+('2027-09-18', 'Independencia Nacional'),
+('2027-09-19', 'Día de las Glorias del Ejército'),
+('2027-10-11', 'Encuentro de Dos Mundos'),
+('2027-10-31', 'Día de las Iglesias Evangélicas y Protestantes'),
+('2027-11-01', 'Día de Todos los Santos'),
+('2027-12-08', 'Inmaculada Concepción'),
+('2027-12-25', 'Navidad');
 
--- 3. Insert Tours
--- A. Standard Tour (Classic Tasting)
--- Available Mon-Sat (enforced by code), multiple times a day.
-INSERT INTO tours (
-    name,
-    description, 
-    duration_minutes, 
-    min_attendants, 
-    max_attendants, 
-    base_price, 
-    tour_type, 
-    earliest_hour, 
-    latest_hour, 
-    buffer_minutes, 
-    is_active
-) VALUES (
-    'Classic Wine Tasting',
-    'Experience our classic wine selection (Mon-Sat).', -- description
-    60, -- duration (1 hour)
-    1, -- min
-    15, -- max
-    25000.00, -- price (CLP)
-    'Standard', 
-    '10:00:00', -- earliest start
-    '17:00:00', -- latest start
-    30, -- buffer between tours
-    TRUE
-);
+-- ==========================================
+-- 3. INSERT TOURS
+-- ==========================================
+INSERT INTO tours (name, description, duration_minutes, min_attendants, max_attendants, base_price, tour_type, earliest_hour, latest_hour, buffer_minutes, is_active) VALUES
+('Tour Bodega InVina', 
+'Se inicia en la sala de ventas con un Video de introducción
+Visita a Jardín de Variedades con paseo explicativo por distintas cepas e estructuras de formación. Aprenda las diferencias entre distintas variedades: su hoja, su racimo, su forma de crecer, la poda y formación, y los vinos que cada cepa produce. Aprenda las diferentes formas de conducir la parra.
+Mirador "El Trampolin": Suba al mirador con espectaculares vistas al viñedo Buena Vista
+Visita el área de recepción y molienda, y aprenda las distintas etapas de recibir y moler las uvas. Aprenda la diferentes formas en que tintos y blancos son recibidos.
+Visita a la bodega de fermentación: Aprenda como se utiliza simples maneras de manejar el proceso natural de la fermentación de uva a vino. Cómo controlar la fermentación para obtener los mejores resultados. Deguste dos vinos directamente de la cuba, aprenda la diferencia entre vinos en bruto vs. Vinos terminados.
+Visita a la sala de embotellado: Conozca el proceso de embotellado, desde el lavado de las botellas, el llenado y tapado, encapsulado, etiquetado y encajado.',
+120, 2, 20, 15000, 'Standard', '10:00:00', '18:00:00', 60, TRUE),
 
--- B. Special Tour (Premium Sunset)
--- Available Every Day, but locks the whole day once booked.
-INSERT INTO tours (
-    name,
-    description, 
-    duration_minutes, 
-    min_attendants, 
-    max_attendants, 
-    base_price, 
-    tour_type, 
-    earliest_hour, 
-    latest_hour, 
-    buffer_minutes, 
-    is_active
-) VALUES (
-    'Premium Sunset Experience',
-    'Exclusive experiences available every day.', 
-    120, -- duration (2 hours)
-    2, -- min
-    10, -- max
-    55000.00, -- price
-    'Special', 
-    '10:00:00', -- Flexible start
-    '18:00:00', 
-    120, -- buffer
-    TRUE
-);
+('E-Bicicleta',
+'Disfrute el paisaje y sienta el aire fresco del campo con tour por los viñedos en una bicicleta eléctrica. Relájate en un precioso y circuito por los viñedos con tranquilidad y relajo.',
+120, 1, 3, 15000, 'Standard', '10:00:00', '18:00:00', 0, TRUE),
 
--- 4. Associate Wines to Tours
--- Tour 1 (Classic) gets wines 1, 2, 3
-INSERT INTO tour_wines (tour_id, wine_id)
-SELECT t.id, w.id 
-FROM tours t, wines w 
-WHERE t.name = 'Classic Wine Tasting' 
-AND w.name IN ('Cabernet Sauvignon Reserva', 'Carmenere Gran Reserva', 'Sauvignon Blanc Estate');
+('Maravilla Maridaje',
+'Recorrido completo idéntico a los tours standard: Jardín de variedades, Mirador El Trampolin, Area de recepción, bodega de vinos, área de embotellado. En seguida se realizará un almuerzo o cena en la Terraza El Trampolin, con vista al viñedo Buena Vista. Disfrute exquisitos platos elaborados por nuestro chef, maridado con una selección de 5 vinos Gran Reserva e Icono.',
+180, 4, 10, 50000, 'Special', '10:00:00', '18:00:00', 0, TRUE),
 
--- Tour 2 (Premium) gets wines 2, 4, 5
-INSERT INTO tour_wines (tour_id, wine_id)
-SELECT t.id, w.id 
-FROM tours t, wines w 
-WHERE t.name = 'Premium Sunset Experience' 
-AND w.name IN ('Carmenere Gran Reserva', 'Syrah Private Collection', 'Pinot Noir Selection');
+('Batuco Paradise',
+'Tour comienza en la Bodega de Invina en San Rafael. Recorrido completo idéntico a los tours standard: Jardín de variedades, Mirador El Trampolin, Area de recepción, bodega de vinos, área de embotellado.
+Traslado hacia nuestro precioso campo Batuco.
+Visita al campo para conocer los rincones especiales de donde nacen los vinos Iconos de Invina.',
+300, 4, 10, 60000, 'Special', '10:00:00', '18:00:00', 0, TRUE),
 
--- 5. Add Menus for Premium Tour
--- Let's give the "Premium Sunset Experience" two menu options
-WITH premium_tour AS (
-    SELECT id FROM tours WHERE name = 'Premium Sunset Experience' LIMIT 1
-)
-INSERT INTO menus (tour_id, name, description, price, is_active)
-VALUES
-    ((SELECT id FROM premium_tour), 'Standard Selection', 'The classic premium experience.', 55000.00, TRUE),
-    ((SELECT id FROM premium_tour), 'Exclusive Reserve', 'Top-tier wines from our private cellar.', 75000.00, TRUE);
+('Maule Profundo',
+'Tour comienza en la Bodega de Invina en San Rafael. Recorrido completo idéntico a los tours standard: Jardín de variedades, Mirador El Trampolin, Area de recepción, bodega de vinos, área de embotellado.
+Traslado hacia Curtiduría (1 hr. 10min) para conocer un pueblo histórico de producción de vinos de uvas patrimoniales. Caminar por viñedos centenarios.
+Almuerzo tradicional en casona familiar donde se elaboran vinos al estilo tradicional.
+Después del almuerzo el tour continúa por caminos interiores (40 min.) hasta llegar a nuestro precioso campo Batuco. Visita al campo para conocer los rincones especiales de donde nacen los vinos Iconos de Invina. Degustación guiada de nuestros vinos Iconos.
+Almuerzo casero en Curtiduría maridado con Rosa de Curtiduría Moscatel Rosado y Guanay País, Postre con Berry Nice
+Degustación en cabaña Black Shack en Batuco con picoteo: Cuartel 4A Carmenere, DeCabeza Blend Mediterraneo, Secano Tempranillo, Ojos Verdes Red Blend',
+300, 4, 10, 80000, 'Special', '10:00:00', '18:00:00', 0, TRUE);
 
--- 6. Associate Wines to Menus
--- Standard Menu: Wines 2, 4
-INSERT INTO menu_wines (menu_id, wine_id)
-SELECT m.id, w.id 
-FROM menus m, wines w
-WHERE m.name = 'Standard Selection' 
-AND w.name IN ('Carmenere Gran Reserva', 'Syrah Private Collection');
+-- ==========================================
+-- 4. INSERT MENUS (all linked to Tour Bodega InVina = tour_id 1)
+-- ==========================================
+INSERT INTO menus (tour_id, name, description, price, is_active) VALUES
+(1, 'Sierra Batuco', 'VINOS RESERVA SIERRA BATUCO, elegir 4 Reserva y deguste también nuestro Lone Rider Premium Selection Red Blend', 15000, TRUE),
+(1, 'Tricky Rabbit', 'VINOS RESERVA TRICKY RABBIT elegir 4 Reserva y deguste también nuestro Tricky Fizz frizante de arándanos.', 15000, TRUE),
+(1, 'Luma Chequen', 'Vinos de potencia y elegancia. Cada vino es elaborado de uvas proveniente de cuarteles de nuestros viñedos que han demostrado la más alta aptitud para resaltar la calidad y tipicidad de cada vino. Son vinos que tienen la potencia para evolucionar de forma excepcional con envejecimiento en barrica. Degustación de 4 vinos y deguste también IN, nuestro espumante premiado elaborado en el método tradicional de segunda fermentación en botella', 20000, TRUE),
+(1, 'Carmenere, la Cepa Perdida', 'Deguste la cepa emblemática de Chile en diferentes niveles y mezclas de la viña premiada por producir el mejor Carmenere de Chile. Degustación de 5 vinos y deguste también nuestro Berry Nice, vino único 100% fermentado de arándanos.', 25000, TRUE),
+(1, 'Íconos', 'La línea Icono de Invina, todos premiados con 90 puntos o más por críticos internacionalmente reconocidos. Vinos intensos, expresivos y sorprendente. Cada vino expresa su personalidad única, así creando una aventura degustativa', 35000, TRUE);
 
--- Exclusive Menu: Wines 4, 5 and a standard one
-INSERT INTO menu_wines (menu_id, wine_id)
-SELECT m.id, w.id 
-FROM menus m, wines w
-WHERE m.name = 'Exclusive Reserve' 
-AND w.name IN ('Syrah Private Collection', 'Pinot Noir Selection', 'Cabernet Sauvignon Reserva');
-
--- 7. (Optional) Seed a "Day Lock" scenario
--- Let's say someone booked the Special Tour on a specific future date.
--- This should prevent ANY other bookings on that day when testing.
--- Date: 2026-03-15 (Example)
-/*
-INSERT INTO tour_instances (tour_id, instance_date, start_time, current_attendants)
-SELECT id, '2026-03-15', '14:00:00', 2
-FROM tours 
-WHERE tour_type = 'Special' LIMIT 1;
-
--- Associated Order for that instance
-INSERT INTO orders (
-    tour_instance_id, customer_name, customer_email, attendees_count, total_amount, status
-)
-VALUES (
-    (SELECT id FROM tour_instances WHERE instance_date = '2026-03-15'),
-    'Test User',
-    'test@example.com',
-    2,
-    110000,
-    'Confirmed'
-);
-*/
-
--- 8. Add Tour Images for Tour 1
+-- 5. Add Tour Images for Tour 1
 INSERT INTO tour_images (tour_id, image_url, display_order)
 VALUES
     (1, '/images/tours/TourEstandar1/Arearecepcióndeuvas1.jpg', 6),
